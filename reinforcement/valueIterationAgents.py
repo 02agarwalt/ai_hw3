@@ -13,6 +13,7 @@
 
 
 import mdp, util
+import sys
 
 from learningAgents import ValueEstimationAgent
 
@@ -43,9 +44,21 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.iterations = iterations
         self.values = util.Counter() # A Counter is a dict with default 0
 
-        # Write value iteration code here
-        "*** YOUR CODE HERE ***"
-
+        for iter_num in range(self.iterations):
+          updates = []
+          for state in mdp.getStates():
+            max_score = 0
+            score_set = False
+            for action in mdp.getPossibleActions(state):
+              cur_score = 0
+              for nextState, trans_prob in mdp.getTransitionStatesAndProbs(state, action):
+                cur_score += trans_prob * (mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
+              if not score_set or cur_score > max_score:
+                score_set = True
+                max_score = cur_score
+            updates.append((state, max_score))
+          for state, max_score in updates:
+            self.values[state] = max_score
 
     def getValue(self, state):
         """
@@ -59,8 +72,10 @@ class ValueIterationAgent(ValueEstimationAgent):
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        cur_score = 0
+        for nextState, trans_prob in self.mdp.getTransitionStatesAndProbs(state, action):
+          cur_score += trans_prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
+        return cur_score
 
     def computeActionFromValues(self, state):
         """
@@ -71,8 +86,16 @@ class ValueIterationAgent(ValueEstimationAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return None.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        max_score = 0
+        best_action = None
+        for action in self.mdp.getPossibleActions(state):
+          cur_score = 0
+          for nextState, trans_prob in self.mdp.getTransitionStatesAndProbs(state, action):
+            cur_score += trans_prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
+          if cur_score > max_score:
+            max_score = cur_score
+            best_action = action
+        return best_action
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
