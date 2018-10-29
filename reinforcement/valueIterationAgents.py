@@ -88,11 +88,13 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         max_score = 0
         best_action = None
+        score_set = False
         for action in self.mdp.getPossibleActions(state):
           cur_score = 0
           for nextState, trans_prob in self.mdp.getTransitionStatesAndProbs(state, action):
             cur_score += trans_prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
-          if cur_score > max_score:
+          if not score_set or cur_score > max_score:
+            score_set = True
             max_score = cur_score
             best_action = action
         return best_action
